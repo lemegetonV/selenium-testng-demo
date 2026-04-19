@@ -575,6 +575,77 @@ Append-only. One entry per prompt. Newest at the bottom.
 
 ---
 
+### 2026-04-19 — Prompt 07: README and AI-docs Finalization
+
+- **Files created**
+  - `README.md` — full rewrite. Replaced the one-line placeholder with
+    a ten-section reviewer-focused document: title + one-line summary,
+    what the test does (including the four-checkpoint contract), quick
+    start, how to view the committed report, project structure tree,
+    eight design decisions with reasoning (dynamic By locators,
+    single ElementActions entry point, three-tier click fallback,
+    hard assertions only, test-data separation, scripted Playwright
+    locator discovery, shared MDC test-name key, forwarded SLF4J →
+    Extent logs), run-variation overrides, real-orders caveat, the
+    AI-assisted development note, and project metadata. Target under
+    400 lines; prose over bullet walls.
+  - `AI-docs/README.md` — one-page index to the folder. Table of
+    prompt phases with one-line summaries; Pending section lists the
+    manually-authored per-prompt files that are not yet present.
+  - `AI-docs/07-readme-and-ai-docs.md` — narrative for this prompt.
+
+- **AI-docs folder state**
+  - Present: `PLAN.md`, `locators.md`, `README.md` (new),
+    `07-readme-and-ai-docs.md` (new).
+  - Pending (user authors manually): `01-planning.md`,
+    `02-scaffold.md`, `03-locator-exploration.md`,
+    `04-page-objects.md`, `05-tests.md`, `06-stabilize.md`,
+    `06.5-rich-extent-report.md`. The CLAUDE.md Progress Log here
+    carries the authoritative narrative for every phase in the
+    interim.
+
+- **Polish pass findings (Part 3)**
+  - No `TODO` / `FIXME` literals in `src/` — grep returned zero.
+  - No `System.out.println` calls — grep returned zero.
+  - No commented-out code blocks — every inline comment that exists
+    is load-bearing (AJAX-race explanation in `CheckoutPage`, WARN
+    rationale in `ElementActions`, country-hardcoding rationale in
+    `TestDataFactory`, etc.). None were removed.
+  - `.gitignore` verified: ignores `target/`, `test-output/`,
+    `logs/`, `exploration/node_modules/`, IDE/OS cruft; does **not**
+    ignore `reports/` or `exploration/screenshots/`. No changes.
+  - `testng.xml` verified: `ExtentReportListener` registered correctly,
+    suite params `browser` + `baseUrl` intact, `parallel="none"` and
+    `thread-count="1"` confirmed. No changes.
+
+- **Flagged for user — not auto-fixed**
+  - `src/main/java/com/demowebshop/pages/ProductDetailsPage.java` is a
+    dead stub. PLAN.md §3 (Amendment at Prompt 03) explicitly removes
+    `ProductDetailsPage` from the class inventory — exploration
+    confirmed add-to-cart is a tile-level action. The file was never
+    deleted and still carries a stale forward-reference comment
+    (`// Locators and actions implemented in Prompt 05.`). Not a
+    runtime bug (class is never instantiated, test is green). The
+    prompt constraint disallows code changes to page objects, so
+    left untouched. Reported to the user for a delete/keep decision
+    outside this prompt.
+
+- **Confirmation**
+  - **No Java source files modified in this prompt.** Documentation
+    only.
+  - No test suite re-run (would add a real order on the shared
+    account for zero documentation benefit).
+  - No extent-report regeneration.
+
+- **Corrections from user:** none (Auto Mode).
+
+- **Project status:** Framework stable, test green, committed report
+  evidence present, documentation complete. Ready for submission.
+
+- **Build complete.** No next prompt.
+
+---
+
 ## Open Items
 
 - **Account state dirty constraint** — always select "New Address" explicitly in
