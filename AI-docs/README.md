@@ -21,19 +21,13 @@ Plus:
 - `locators.md` — per-page Selenium By locators with dropdown value catalogs
   harvested by `exploration/explore.js`
 
-## Pending
+Each prompt file carries the verbatim user prompt text as it was sent, plus
+a short summary and an Outcome pointer to the matching entry in the
+project-root `CLAUDE.md` Progress Log — where the implementation narrative,
+nuances, and corrections live in full.
 
-The following per-prompt narrative files are authored manually and are not
-present in the repository at the time of Prompt 07:
-
-- 01-planning.md
-- 02-scaffold.md
-- 03-locator-exploration.md
-- 04-page-objects.md
-- 05-tests.md
-- 06-stabilize.md
-- 06.5-rich-extent-report.md
-
-`CLAUDE.md` at the project root holds the authoritative Progress Log for
-every prompt in the interim; the pending files will be placed here alongside
-`07-readme-and-ai-docs.md`.
+Prompts 01-05, 06.5, and 07 were structured prompts sent as a single
+message. Prompt 06 was not — stabilization happened as two short
+conversational follow-ups inside the Prompt 05 session after the first
+suite run failed on the billing state dropdown; `06-stabilize.md` captures
+those messages verbatim.

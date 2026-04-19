@@ -646,6 +646,39 @@ Append-only. One entry per prompt. Newest at the bottom.
 
 ---
 
+### 2026-04-19 — Post-Prompt 07: Per-prompt AI-docs backfill
+
+- **Files created**
+  - `AI-docs/01-planning.md`, `02-scaffold.md`, `03-locator-exploration.md`,
+    `04-page-objects.md`, `05-tests.md`, `06-stabilize.md`,
+    `06.5-rich-extent-report.md`. Each carries the verbatim user prompt
+    text plus a short summary and an Outcome pointer back to the
+    matching Progress Log entry above.
+
+- **Source**
+  - Prompt texts extracted from the Claude Code session transcripts at
+    `~/.claude/projects/-Users-shadaabrajbarbhuiya-Desktop-MY-PROJECTS--LEARNINGS-selenium-testng-demo/*.jsonl`.
+    One session per prompt, mapped by chronological `mtime`:
+    Prompt 01 = `bcd753b9`, 02 = `6b40091b`, 03 = `7560d8fb`,
+    04 = `1842e1bb`, 05 + 06 = `cf301031` (shared session),
+    06.5 = `7063771f`, 07 = `c944e4e1` (current).
+
+- **Nuance**
+  - Prompt 06 was not a structured prompt — stabilization happened as
+    two short conversational messages inside the Prompt 05 session
+    after the first suite run failed. Captured verbatim in
+    `06-stabilize.md`: *"the test is failing during filling address"* →
+    *"test passed now, update docs and commit"*.
+
+- **AI-docs/README.md updated**
+  - Removed the Pending section (all files now present).
+  - Added a short note clarifying the format (verbatim prompt +
+    summary + CLAUDE.md pointer) and calling out the Prompt 06 nuance.
+
+- **Corrections from user:** none.
+
+---
+
 ## Open Items
 
 - **Account state dirty constraint** — always select "New Address" explicitly in
