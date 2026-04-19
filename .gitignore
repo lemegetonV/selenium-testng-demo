@@ -36,3 +36,6 @@ Desktop.ini
 *.swp
 *.swo
 *~
+
+# Playwright exploration script dependencies
+exploration/node_modules/

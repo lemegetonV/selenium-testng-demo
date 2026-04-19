@@ -145,10 +145,11 @@ Maven Central at scaffold time — any drift gets logged in `CLAUDE.md`.
 | Class            | Fields (sketch)                                                | Source / Lombok |
 |------------------|----------------------------------------------------------------|-----------------|
 | `User`           | `email`, `password`                                            | JSON-loaded · `@Data @Builder @Jacksonized` |
-| `SearchTerm`     | `term`, `expectedKeyword`                                      | JSON-loaded · `@Data @Builder @Jacksonized` |
+| `SearchTerm`     | `term`, `expectedProductName`                                  | JSON-loaded · `@Data @Builder @Jacksonized` |
 | `Product`        | `name`, `price`                                                | Runtime capture · `record` (no Lombok)      |
-| `BillingAddress` | `firstName`, `lastName`, `email`, `country`, `city`, `address1`, `zip`, `phone` | Datafaker-generated · `@Data @Builder` |
+| `BillingAddress` | `firstName`, `lastName`, `email`, `country`, `state`, `city`, `address1`, `zip`, `phone` | Datafaker-generated · `@Data @Builder` |
 | `CreditCard`     | `cardholder`, `cardNumber`, `cardType`, `expiryMonth`, `expiryYear`, `cvv` | Datafaker-generated · `@Data @Builder` |
+| `TestCard`       | `cardType`, `cardNumber`                                       | JSON-loaded · `@Data @Builder @Jacksonized` |
 
 **Lombok rule (Amendment 6).** Every POJO loaded from JSON gets
 `@Data @Builder @Jacksonized` (Jacksonized teaches Jackson how to
@@ -164,14 +165,13 @@ See §4 for flow walkthrough. Summary:
 
 | Class                  | Purpose                                                              |
 |------------------------|----------------------------------------------------------------------|
-| `HomePage`             | Landing after launch; provides `open()` and entry affordances.       |
+| `HomePage`             | Landing after launch; `open()` (navigate to baseUrl) + title/landmark loaded-check only. Navigation is via `HeaderComponent`. |
 | `LoginPage`            | Email, password, Login button; surface login error text.             |
-| `HeaderComponent`      | Shared header — search box, account/logout links, cart badge.        |
-| `SearchResultsPage`    | Product grid after search; add-to-cart from tile OR navigate to PDP. |
-| `ProductDetailsPage`   | PDP — quantity, add-to-cart. Included as safety net (see §10).       |
+| `HeaderComponent`      | Shared header — search box, account/logout links, cart badge. Worth a class: used at Steps 2, 3, 5, 11. |
+| `SearchResultsPage`    | Product grid after search; add-to-cart directly from the tile (PDP not navigated — confirmed by exploration). |
 | `CartPage`             | Line-items list, terms-of-service checkbox, Checkout button.         |
-| `CheckoutPage`         | Billing / shipping / shipping-method / payment-method / confirm.     |
-| `OrderConfirmationPage`| Success banner + order number.                                       |
+| `CheckoutPage`         | Single-page accordion. Six discrete action methods: `fillBillingAddress`, `fillShippingAddress`, `selectShippingMethod`, `selectPaymentMethod`, `fillPaymentInfo`, `confirmOrder`. |
+| `OrderConfirmationPage`| Success banner + order number (extracted from container text).       |
 
 ### Test layer (`src/test/java`)
 
@@ -202,21 +202,23 @@ Walking the 11-step flow and mapping each step to a page object:
 | 10   | Verify order success                 | `OrderConfirmationPage`                               |
 | 11   | Logout                               | `HeaderComponent`                                     |
 
-**Assumption (flagged).** `CheckoutPage` is modeled as a single page object
-because demowebshop's checkout is a single-page accordion. Confirmed only
-after Prompt 04 (Playwright codegen + DOM inspection). If accordion sections
-behave as independent pages or have their own URLs, split into
-`BillingAddressStep`, `ShippingAddressStep`, `ShippingMethodStep`,
-`PaymentMethodStep`, `PaymentInfoStep`, `ConfirmOrderStep`.
+**Confirmed (Prompt 03).** `CheckoutPage` is a single page object. The checkout
+is a single-page accordion with six numbered sections (Billing, Shipping,
+Shipping Method, Payment Method, Payment Information, Confirm Order). No URL
+changes between sections.
 
-**Assumption (flagged).** `ProductDetailsPage` may be redundant if "Add to
-cart" buttons render directly on search result tiles. Keep it in the
-inventory as a safety net; delete if unused after Prompt 05.
+**Confirmed (Prompt 03).** `ProductDetailsPage` is REMOVED from the class
+inventory. Exploration confirmed "Add to cart" is available directly on search
+result tiles for "14.1-inch Laptop" — no PDP navigation required.
 
-**Assumption (flagged).** `HeaderComponent` is a component, not a full
-page. Modeled as a plain class extending `BasePage` but named `*Component`
-for clarity. If the nav surface is trivial, we inline into the pages that
-use it and drop this class.
+**Confirmed (Prompt 03).** `HeaderComponent` is a dedicated class. It is used
+across Steps 2 (login nav), 3 (search), 5 (cart nav), and 11 (logout) — more
+than enough to justify a class over inlining.
+
+**Constraint (Prompt 03 — Amendment F).** The test account has accumulated address
+book entries and order history from prior candidates. Tests must verify order
+success via the confirmation page only — never via order history count or address
+book contents.
 
 ---
 
@@ -239,23 +241,40 @@ the login form takes only email + password. Billing names come from
 
 ### `src/test/resources/testdata/products.json`
 
+One search term — demonstration of the DataProvider pattern. Running the full
+E2E twice adds runtime without demonstrating new capability.
+
 ```json
 {
   "searchTerms": [
     {
-      "term": "computer",
-      "expectedKeyword": "Computer"
-    },
-    {
-      "term": "book",
-      "expectedKeyword": "Book"
+      "term": "laptop",
+      "expectedProductName": "14.1-inch Laptop"
     }
   ]
 }
 ```
 
-Dynamic data (billing address, credit card) is **not** stored here — it's
-generated per test by `TestDataFactory` using a configurable Datafaker seed.
+### `src/test/resources/testdata/paymentCards.json`
+
+Luhn-valid card numbers keyed by card type label (must match the payment info
+dropdown exactly). Random card numbers fail Luhn checksum validation on submit.
+
+```json
+{
+  "testCards": [
+    { "cardType": "Visa",        "cardNumber": "4111111111111111" },
+    { "cardType": "Master card", "cardNumber": "5555555555554444" }
+  ]
+}
+```
+
+Card type dropdown options confirmed by exploration: `Visa`, `Master card`,
+`Discover`, `Amex`. The first entry (Visa) is always selected — deterministic.
+
+Dynamic data (billing address, credit card cardholder/expiry/CVV) is **not**
+stored here — it's generated per test by `TestDataFactory` using a configurable
+Datafaker seed.
 
 ---
 
@@ -381,39 +400,102 @@ conflict.
     via `@Parameters`, with `ConfigReader` as the fallback so the
     suite file and `-D` overrides remain coherent.
 
+## 8b. Amendments Locked at Prompt 03
+
+The following design refinements were confirmed or locked during the plan
+amendment and locator exploration phase.
+
+- **Amendment A — Checkout single-page accordion confirmed.** `CheckoutPage`
+  stays as one class with six discrete action methods (see §3 page objects).
+
+- **Amendment B — CheckoutPage six discrete action methods.**
+  - `fillBillingAddress(BillingAddress)` — selects "New Address" by visible text,
+    fills all fields, clicks billing Continue, waits for shipping form.
+  - `fillShippingAddress(BillingAddress)` — same approach; no "ship to same address"
+    shortcut exists in the DOM.
+  - `selectShippingMethod(String)` — selects radio by adjacent label text,
+    clicks shipping-method Continue, waits for payment-method radios.
+  - `selectPaymentMethod(String)` — selects radio by adjacent label text (last label
+    wins — each radio has an image label AND a text label), clicks Continue, waits
+    for `#CreditCardType`.
+  - `fillPaymentInfo(CreditCard)` — fills card form, clicks payment-info Continue,
+    waits for Confirm button.
+  - `confirmOrder()` — clicks Confirm, waits for `.section.order-completed`, returns
+    `OrderConfirmationPage`.
+
+- **Amendment C — BillingAddress `state` field added.** `faker.address().state()`
+  returns full state names matching the dropdown. Country hardcoded to
+  "United States" (state dropdown is country-dependent).
+
+- **Amendment D — CreditCard uses Luhn-valid numbers from `paymentCards.json`.**
+  Card number not generated randomly. `TestCard` POJO added. `generateCreditCard()`
+  picks first entry deterministically. Expiry year is `LocalDate.now().getYear() + 4`
+  (stays valid as calendar years advance). Dropdown confirmed: `Visa`, `Master card`,
+  `Discover`, `Amex`. `paymentCards.json` values match exactly.
+
+- **Amendment E — Shipping address always refilled independently.** No "Ship to
+  same address" shortcut in DOM. `fillShippingAddress` always selects "New Address"
+  and fills the form again with the same `BillingAddress` object.
+
+- **Amendment F — Account state is dirty (constraint).** 20+ saved addresses,
+  accumulated order history. Tests: (1) always select "New Address" explicitly,
+  (2) verify order via confirmation banner only — never via order history.
+
+- **Amendment G — `HomePage` stays minimal.** Only `open()` (navigate to baseUrl)
+  and a loaded-check (`.header-logo` present). All navigation via `HeaderComponent`.
+
+- **Amendment H — One search term, one product.** `products.json` contains only
+  `{"term":"laptop","expectedProductName":"14.1-inch Laptop"}`. `SearchTerm.expectedKeyword`
+  renamed to `expectedProductName`. `ProductDataProvider` unchanged (Jackson maps
+  by field name automatically).
+
+- **Prompt sequence renumbered.** Prompt 02 absorbed the Prompt 03 reporting scope,
+  so locator exploration moved from Prompt 04 → Prompt 03. Page objects = Prompt 04,
+  tests = Prompt 05, stabilize = Prompt 06, final = Prompt 07.
+
 ## 9. Prompt Sequence Ahead
+
+Prompt 02 absorbed the reporting/listener scope originally in Prompt 03, so
+the sequence is renumbered from Prompt 03 onward.
 
 | # | Prompt                                | Goal                                                                 |
 |---|---------------------------------------|----------------------------------------------------------------------|
-| 1 | **Planning** (this prompt)            | Produce PLAN.md, CLAUDE.md, AI-docs scaffold.                        |
-| 2 | Scaffold the framework                | `pom.xml`, folder tree, all utility classes, `BasePage`, `BaseTest`, empty page-object stubs. |
-| 3 | Add reporting and listeners           | `ExtentReportListener`, `log4j2.xml`, screenshot capture wiring, MDC. |
-| 4 | Playwright CLI codegen → locators map | Run `playwright codegen` against the 11-step flow; translate selectors to a structured locators map per page; document the mapping.  |
-| 5 | Build page objects                    | Implement the page objects (and components) using the locators map; all interactions route through `ElementActions`. |
-| 6 | Write tests                           | `EndToEndPurchaseTest` data-driven via `ProductDataProvider`; 4 assertions at the locked checkpoints. |
-| 7 | Stabilize after first run             | Run the suite, triage flakiness, tune waits, refine click fallback thresholds, commit a green run. |
-| 8 | Finalize README and AI-docs           | Full README (how to run, structure, CI notes); consolidate AI-docs narrative; final commit. |
+| 1 | **Planning** (done)                   | Produce PLAN.md, CLAUDE.md, AI-docs scaffold.                        |
+| 2 | Scaffold the framework (done)         | `pom.xml`, folder tree, all utility classes, `BasePage`, `BaseTest`, empty page-object stubs, `ExtentReportListener`. |
+| 3 | Plan amendments + locator exploration (done) | Apply 8 design amendments; scripted Playwright exploration of the full flow; produce `AI-docs/locators.md`. |
+| 4 | Build page objects                    | Implement all page objects using `AI-docs/locators.md`; all DOM interactions route through `ElementActions`. |
+| 5 | Write tests                           | `EndToEndPurchaseTest` data-driven via `ProductDataProvider`; 4 assertions at the locked checkpoints. |
+| 6 | Stabilize after first run             | Run the suite, triage flakiness, tune waits, refine click fallback thresholds, commit a green run. |
+| 7 | Finalize README and AI-docs           | Full README (how to run, structure, CI notes); consolidate AI-docs narrative; final commit. |
 
 ---
 
 ## 10. Open Questions and Risks
 
-- **Checkout DOM unknown.** The single-page-accordion assumption may be
-  wrong. Risk: significant rework of `CheckoutPage` into multiple step
-  classes. Resolved at Prompt 04.
-- **Add-to-cart source of truth.** Unclear whether search tiles expose
-  "Add to cart" directly or funnel through PDP. Risk: `ProductDetailsPage`
-  is orphaned or mandatory — decide at Prompt 05.
-- **HeaderComponent scope.** Header content (search, cart badge, logout)
-  may differ between guest and logged-in states. Risk: conditional
-  locators. Addressed at Prompt 04/05.
-- **`elementClickIntercepted` frequency.** The 3-tier click fallback is
-  the safety net, but if we hit the JS fallback on every click, something
-  is structurally wrong (overlay, sticky header, etc.). Monitor WARN logs
-  at Prompt 07.
-- **Terms-of-service checkbox on `CartPage`.** Demowebshop requires the
-  TOS box before checkout — forgetting it produces a JS alert, which is
-  quiet to debug. Explicit assertion/action needed.
-- **Maven versions (April 2026).** Cited versions are best-estimate as of
-  the assistant's knowledge cutoff. Verify live on Maven Central at
-  Prompt 02 and log any bumps in `CLAUDE.md`.
+- **~~Checkout DOM unknown.~~ RESOLVED (Prompt 03).** Single-page accordion
+  confirmed. Six sections, no URL changes. `CheckoutPage` stays a single class.
+- **~~Add-to-cart source of truth.~~ RESOLVED (Prompt 03).** Tile-level add-to-cart
+  confirmed for "14.1-inch Laptop". `ProductDetailsPage` removed from inventory.
+- **~~HeaderComponent scope.~~ RESOLVED (Prompt 03).** Header used at 4 steps
+  (login nav, search, cart nav, logout) — class is justified.
+- **Ship-to-same-address shortcut.** NOT found in DOM. Approach locked:
+  always select "New Address" in shipping dropdown, refill with same
+  `BillingAddress` object as billing. (Prompt 03.)
+- **Billing address dropdown `New Address` option value is `""` (empty string).**
+  In Selenium, use `selectByVisibleText("New Address")` rather than
+  `selectByValue("")` which is ambiguous. (Prompt 03.)
+- **`accountLink` not uniquely selectable.** `a[href*="customer/info"]`
+  matches 2 elements (main + mobile nav). Use `.header-links a[href='/customer/info']`
+  or `.first()`. Not needed for the current E2E — no impact on Prompt 04.
+- **Order number extraction.** No dedicated `strong`/`li.order-number` element.
+  Extracted from `.section.order-completed` container text via `split("Order number:")`.
+- **`elementClickIntercepted` frequency.** Monitor at Prompt 06 run.
+- **Terms-of-service checkbox.** Confirmed selector `#termsofservice`. Must tick
+  before clicking `#checkout` — JS alert blocks further interaction if skipped.
+- **Maven versions.** Verify at first `mvn package` run (Prompt 06). Log bumps
+  in `CLAUDE.md`.
+- **Account state is dirty.** Address book has 20+ saved entries from prior
+  candidates. Tests must select "New Address" explicitly — never rely on the
+  first dropdown entry being the correct address. Order history is also
+  polluted — verify success only via the confirmation page banner, not order
+  history navigation.

@@ -1,0 +1,12 @@
+{
+  "testCards": [
+    {
+      "cardType": "Visa",
+      "cardNumber": "4111111111111111"
+    },
+    {
+      "cardType": "Master card",
+      "cardNumber": "5555555555554444"
+    }
+  ]
+}

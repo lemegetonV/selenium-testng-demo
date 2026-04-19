@@ -10,5 +10,5 @@ import lombok.extern.jackson.Jacksonized;
 public class SearchTerm {
 
     private final String term;
-    private final String expectedKeyword;
+    private final String expectedProductName;
 }

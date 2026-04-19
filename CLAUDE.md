@@ -170,26 +170,120 @@ Append-only. One entry per prompt. Newest at the bottom.
 
 ---
 
+### 2026-04-19 — Prompt 03: Plan Amendments + Locator Exploration
+
+- **What was implemented**
+  - Applied 8 plan amendments (A–H) to PLAN.md, source files, and test data.
+  - Created `exploration/` directory with `package.json` (Playwright 1.59.1)
+    and `explore.js` — a scripted headless Playwright runner that walks the
+    full 11-step flow, evaluates selector strategies, captures dropdown values,
+    and takes numbered screenshots.
+  - Ran explore.js against the live site; full flow completed successfully
+    (order placed, order confirmed, logout verified).
+  - Generated `AI-docs/locators.md` — per-page locator tables with By expressions,
+    dropdown/radio value lists, parameterized templates, and exploration notes.
+  - 23 screenshots saved to `exploration/screenshots/` (01-homepage.png →
+    23-logged-out.png).
+
+- **Plan Amendments applied**
+  - **A** — Checkout single-page accordion confirmed; CheckoutPage remains one class.
+  - **B** — CheckoutPage gets six discrete action methods (fill billing/shipping,
+    select shipping method, select payment method, fill payment info, confirm order).
+  - **C** — `BillingAddress` gets `state` field; `generateBillingAddress()` uses
+    `faker.address().state()`; country hardcoded to "United States".
+  - **D** — `TestCard` POJO created; `paymentCards.json` created with Luhn-valid
+    Visa (4111111111111111) and Master card (5555555555554444) numbers.
+    `generateCreditCard()` updated: picks first card deterministically; expiry year
+    dynamic (`now().getYear() + 4`). Dropdown confirmed: Visa, Master card, Discover, Amex.
+  - **E** — Shipping address always refilled independently; no "Ship to same address"
+    shortcut found in DOM. Approach locked: select "New Address" in shipping dropdown,
+    refill with same `BillingAddress` object.
+  - **F** — Account state dirty constraint documented: always select "New Address",
+    verify success via confirmation page only.
+  - **G** — `HomePage` minimal: `open()` + `.header-logo` loaded-check. All nav via
+    `HeaderComponent`.
+  - **H** — `products.json` updated to one term: `laptop` / `14.1-inch Laptop`.
+    `SearchTerm.expectedKeyword` renamed to `expectedProductName`. `ProductDataProvider`
+    unchanged (Jackson maps by field name).
+  - **Prompt sequence renumbered**: Prompt 02 absorbed Prompt 03 scope, so locator
+    exploration is now Prompt 03. Page objects = 04, tests = 05, stabilize = 06,
+    final = 07. PLAN.md §9 updated.
+
+- **Exploration outcome**
+  - Flow: complete (exit 0, all 11 steps walked, order placed).
+  - Screenshot count: 23 (numbered 01–23 matching flow order).
+  - Script iterations needed: 5 (fixed `/new/i` regex matching "New York" instead of
+    "New Address"; fixed `-block` waitForSelector race; fixed payment radio label
+    strict-mode violation; fixed confirm-order race with `Promise.all`).
+
+- **Key discoveries**
+  - **Add-to-cart path: TILE.** `input[value="Add to cart"]` is on the search result
+    tile. `ProductDetailsPage` is **unused** — removed from PLAN.md §3.
+  - **Ship-to-same-address shortcut: NOT FOUND.** Always use "New Address" + refill.
+  - **Account state dirty.** Billing/shipping dropdowns have 20+ saved addresses.
+    Must select "New Address" by visible text (its option value is empty string `""`).
+  - **Payment method labels.** Each radio has two `<label>` elements (image + text).
+    Use `.last()` in Playwright / text-based XPath in Selenium to get the display name.
+  - **Order number.** No `li.order-number` or `strong` — plain text in
+    `.section.order-completed`. Extract with `split("Order number: ")[1].trim()`.
+  - **Confirmation page navigation.** `waitForURL` races with redirect; use
+    `Promise.all([waitForSelector('.section.order-completed'), click(confirm)])`.
+  - **Notification bar** captures successfully: `#bar-notification`,
+    text = "The product has been added to your shopping cart".
+  - **Payment method "Credit Card"** label confirmed (not "Credit card" or "CREDIT CARD").
+
+- **Dropdown option strings captured**
+  - Billing address book: 20 saved addresses + "New Address" (option value `""`)
+  - Billing country (first 10): Select country, United States, Canada, Afghanistan, …
+  - Billing state (US): 62 options (Alabama, Alaska, …, Wyoming) + Armed Forces codes
+  - Shipping address book: same 20 + "New Address" + newly added Jane Tester entry
+  - Shipping methods: "Ground (0.00)", "Next Day Air (0.00)", "2nd Day Air (0.00)"
+  - Payment methods: "Cash On Delivery (COD) (7.00)", "Check / Money Order (5.00)",
+    "Credit Card", "Purchase Order"
+  - Credit card type: "Visa", "Master card", "Discover", "Amex"
+  - Expiry month: "01"–"12"
+  - Expiry year: "2026"–"2040"
+
+- **Brittle selectors flagged for Prompt 04**
+  - `input[name="shippingoption"]` and `input[name="paymentmethod"]` are group
+    selectors (count > 1). In Selenium, get all elements and filter by adjacent
+    label text — don't try to use a single unique selector.
+  - `#billing-address-select` / `#shipping-address-select` — always select by
+    visible text "New Address", not by value (value is `""`).
+  - Payment section `-block` container IDs are always in DOM but hidden; don't
+    waitForVisible on them — wait for the specific interaction element inside.
+
+- **Corrections from user:** none (auto-execution).
+
+- **Next prompt:** Prompt 04 — implement all page objects using `AI-docs/locators.md`
+  as the source of truth.
+
+---
+
 ## Open Items
 
-- Maven version drift (if any) surfaces as resolution errors on first
-  `mvn package` run (Prompt 07). Log actual versions used there.
-- Checkout page structure (single-page accordion vs. multi-step) is
-  **assumed single-page**. Confirm during Playwright codegen (Prompt 04)
-  and split `CheckoutPage` if the DOM disagrees.
-- Decide whether `ProductDetailsPage` is needed once we see whether
-  search result tiles expose "Add to cart" directly (Prompt 05).
-- Decide whether `HeaderComponent` is worth a dedicated class or should
-  be inlined into the pages that use it (Prompt 05).
-- Watch the click-fallback WARN rate in Prompt 07 — frequent JS
-  fallbacks signal a structural locator problem, not just flakiness.
-- Terms-of-service checkbox on `CartPage` must be ticked before
-  checkout; skipping it yields a JS alert that's quiet to debug.
-- `TestDataFactory.generatePhoneNumber()` format: confirm demowebshop
-  accepts raw 10-digit numeric string (no separators) at Prompt 07.
-- `ExtentReportListener.onFinish()` calls `testNode.remove()` after the
-  last test — verify no ThreadLocal leak if multiple `@Test` methods run
-  in the same class (Prompt 06/07).
+- Maven version drift (if any) surfaces at first `mvn package` run (Prompt 06).
+- **Account state dirty constraint** — always select "New Address" explicitly in
+  billing and shipping dropdowns. Verify order success via confirmation banner
+  only — never via order history count or address book contents.
+- `selectPaymentMethod`: each payment radio has two labels (image + text). In
+  Selenium use `By.xpath` to find the radio whose text label contains "Credit Card",
+  then call `.click()` on the radio (not the label).
+- `selectShippingMethod`: use `input[name='shippingoption']` group and
+  `selectByVisibleText` or filter by adjacent label to pick "Ground".
+- Billing/shipping address "New Address" option value is `""` (empty string) in
+  the dropdown — use `Select.selectByVisibleText("New Address")`, not `selectByValue`.
+- Order number extraction: no dedicated element. Get text from `.section.order-completed`
+  and parse after `"Order number: "`.
+- `accountLink` has 2 DOM matches — use `.header-links a[href='/customer/info']`
+  or skip since the E2E doesn't assert on account info.
+- Watch the click-fallback WARN rate at Prompt 06 — frequent JS fallbacks signal a
+  structural locator problem.
+- Terms-of-service `#termsofservice` checkbox must be ticked before `#checkout` click.
+- `TestDataFactory.generatePhoneNumber()` format: confirm demowebshop accepts raw
+  10-digit numeric string at Prompt 06.
+- `ExtentReportListener.onFinish()` calls `testNode.remove()` — verify no ThreadLocal
+  leak if multiple `@Test` methods run in the same class (Prompt 06/07).
 
 ---
 

@@ -1,12 +1,8 @@
 {
   "searchTerms": [
     {
-      "term": "computer",
-      "expectedKeyword": "Computer"
-    },
-    {
-      "term": "book",
-      "expectedKeyword": "Book"
+      "term": "laptop",
+      "expectedProductName": "14.1-inch Laptop"
     }
   ]
 }

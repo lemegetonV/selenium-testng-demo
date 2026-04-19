@@ -1,0 +1,13 @@
+{
+  "name": "demowebshop-locator-explorer",
+  "version": "1.0.0",
+  "description": "Playwright script to walk the demowebshop purchase flow and harvest stable locators",
+  "main": "explore.js",
+  "scripts": {
+    "explore": "node explore.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "playwright": "^1.59.1"
+  }
+}
