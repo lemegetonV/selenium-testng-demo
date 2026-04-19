@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+
+    <Appenders>
+
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{testName}] %logger{36} - %msg%n"/>
+        </Console>
+
+        <!--
+            createOnDemand="true" — the logs/ directory and file are created on
+            the first log write, so no committed .gitkeep is needed and logs/ can
+            stay in .gitignore cleanly.
+        -->
+        <RollingFile name="RollingFile"
+                     fileName="logs/test.log"
+                     filePattern="logs/test-%d{yyyy-MM-dd}-%i.log.gz"
+                     createOnDemand="true">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{testName}] %logger{36} - %msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="10MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="7"/>
+        </RollingFile>
+
+    </Appenders>
+
+    <Loggers>
+
+        <Logger name="com.demowebshop" level="DEBUG" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="RollingFile"/>
+        </Logger>
+
+        <Logger name="org.openqa.selenium" level="WARN" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="RollingFile"/>
+        </Logger>
+
+        <Logger name="org.apache.http" level="WARN" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="RollingFile"/>
+        </Logger>
+
+        <Root level="INFO">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="RollingFile"/>
+        </Root>
+
+    </Loggers>
+
+</Configuration>

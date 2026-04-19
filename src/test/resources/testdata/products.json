@@ -1,0 +1,12 @@
+{
+  "searchTerms": [
+    {
+      "term": "computer",
+      "expectedKeyword": "Computer"
+    },
+    {
+      "term": "book",
+      "expectedKeyword": "Book"
+    }
+  ]
+}

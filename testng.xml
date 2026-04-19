@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<suite name="DemoWebShopSuite" parallel="none" thread-count="1" verbose="1">
+
+    <listeners>
+        <listener class-name="com.demowebshop.listeners.ExtentReportListener"/>
+    </listeners>
+
+    <parameter name="browser" value="chrome"/>
+    <parameter name="baseUrl" value="https://demowebshop.tricentis.com"/>
+
+    <test name="EndToEndPurchase">
+        <packages>
+            <package name="com.demowebshop.tests"/>
+        </packages>
+    </test>
+
+</suite>

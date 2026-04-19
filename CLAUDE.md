@@ -68,10 +68,112 @@ Append-only. One entry per prompt. Newest at the bottom.
 
 ---
 
+### 2026-04-19 — Prompt 02: Framework Scaffold
+
+- **What was implemented**
+  - `pom.xml` — Java 21, `maven-compiler-plugin` 3.13.0,
+    `maven-surefire-plugin` 3.5.2, all PLAN.md §2 dependencies, Lombok
+    `annotationProcessorPaths` block.
+  - `testng.xml` — `parallel="none"`, `thread-count="1"`, listener
+    registration for `ExtentReportListener`, suite parameters `browser`
+    and `baseUrl`.
+  - `.gitignore` — verified; covers `target/`, `test-output/`, `logs/`,
+    IDE/OS cruft. `reports/` intentionally not ignored.
+  - **core/** — `FrameworkException`, `BasePage`, `ElementActions` (full
+    3-tier click fallback + stale retry + password masking + 10 methods).
+  - **config/** — `ConfigReader` (static init, typed getters,
+    `System.getProperty` wins over file).
+  - **driver/** — `DriverFactory` (ThreadLocal, WebDriverManager.setup(),
+    ChromeOptions with headless/noise-suppression flags).
+  - **utils/** — `WaitUtils`, `ScreenshotUtils`, `TestDataReader`,
+    `TestDataFactory` (seeded Datafaker, US format).
+  - **models/** — `User`, `SearchTerm` (`@Jacksonized`); `Product`
+    (Java record); `BillingAddress`, `CreditCard` (`@Builder` only).
+  - **pages/** — 8 page-object stubs: `HomePage`, `LoginPage`,
+    `HeaderComponent`, `SearchResultsPage`, `ProductDetailsPage`,
+    `CartPage`, `CheckoutPage`, `OrderConfirmationPage`.
+  - **base/** — `BaseTest` (`@BeforeSuite` wipes screenshots, `@Parameters`
+    reads suite params, `@BeforeMethod` inits driver + MDC,
+    `@AfterMethod` quits + clears MDC).
+  - **listeners/** — `ExtentReportListener` (full `ITestListener`; base64
+    screenshot on failure via `MediaEntityBuilder`; flush on finish).
+  - **dataproviders/** — `ProductDataProvider` (`@DataProvider
+    "searchTerms"`).
+  - **tests/** — `EndToEndPurchaseTest` (stub `@Test`, replaced Prompt 06).
+  - **resources** — `config.properties`, `users.json`, `products.json`,
+    `log4j2.xml` (`createOnDemand="true"` on RollingFile, MDC slot).
+  - **reports/** — `.gitkeep` + `screenshots/.gitkeep`.
+
+- **Plan Amendments applied**
+  1. **User POJO** — dropped `firstName`/`lastName`. `email` + `password`
+     only. `users.json` updated accordingly.
+  2. **Product** — Java `record(String name, String price)` in
+     `com.demowebshop.models`. Not loaded from JSON; populated at runtime.
+  3. **DriverFactory ChromeOptions** — reads `headless` from ConfigReader;
+     always-on flags: `--disable-notifications`, `--remote-allow-origins=*`,
+     `--window-size=1920,1080`; headless-only: `--headless=new`,
+     `--disable-gpu`, `--no-sandbox`.
+  4. **Hard assertions only** — no `SoftAssert` introduced; framework
+     failures throw `FrameworkException`. Added to PLAN.md §8a.
+  5. **testng.xml suite parameters** — `browser` and `baseUrl` as suite
+     params; `BaseTest` reads via `@Parameters` with ConfigReader fallback.
+  6. **Jacksonized rule** — `@Jacksonized` on `User` and `SearchTerm` only;
+     `BillingAddress` and `CreditCard` use `@Builder` only (never
+     deserialized). Explicit note added to PLAN.md §3.
+  7. **WebDriverManager** — removed the erroneous
+     `System.setProperty("webdriver.chrome.driver", …)` call from
+     PLAN.md §2. `setup()` only.
+  8. **createOnDemand** — `RollingFile` appender in `log4j2.xml` uses
+     `createOnDemand="true"` so `logs/` is created on first write; no
+     committed `.gitkeep` needed.
+
+- **Maven version drift vs. PLAN.md §2**
+  - All versions used verbatim from PLAN.md (knowledge cutoff Jan 2026).
+    Maven Central live-check was not performed during scaffold; deviations,
+    if any, will surface as resolution errors on first `mvn package`.
+    Log actual versions here once verified.
+
+- **Nuances / discoveries during scaffold**
+  - `ElementClickInterceptedException` is a subclass of
+    `ElementNotInteractableException` in Selenium 4. Catching both in the
+    same `multi-catch` block causes a compile error. Resolved by catching
+    only `ElementNotInteractableException` (covers both). No behavior
+    change.
+  - `@Jacksonized` requires the class already has `@Builder`. It works
+    with Lombok's immutable builders, which is why POJOs use `final`
+    fields — no mutable setter needed. `BillingAddress` and `CreditCard`
+    omit it correctly because they are never deserialized.
+  - `TestDataFactory.generatePhoneNumber()` generates a raw 10-digit long
+    cast to string rather than using Datafaker's phone provider, which
+    returns formatted strings (e.g. `555-555-5555`) that demowebshop's
+    field may reject. Noted in code comment; confirm at Prompt 07 during
+    first real run.
+
+- **Open Items resolved this prompt**
+  - Maven version-verification open item deferred to first `mvn package`
+    run (Prompt 07).
+
+- **New open items**
+  - `TestDataFactory.generatePhoneNumber()` format assumption — verify
+    demowebshop accepts a raw 10-digit numeric string at Prompt 07.
+  - `ExtentReportListener.onFinish()` calls `testNode.remove()` but each
+    `onTestStart` pushes a new node — in sequential mode this is fine;
+    confirm no leak if the test class is re-used across multiple methods
+    in a future prompt.
+
+- **Corrections from user:** none (prompt 02 auto-execution).
+
+- **Next prompt:** Playwright codegen to capture locators for the 11-step
+  flow and produce a structured locators map per page (Prompt 04 per
+  PLAN.md §9 — Prompt 03 "reporting polish" is already fully wired in
+  this scaffold, so we can proceed directly to locator discovery).
+
+---
+
 ## Open Items
 
-- Verify cited Maven versions against Maven Central at scaffold time
-  (Prompt 02). Log any bumps here.
+- Maven version drift (if any) surfaces as resolution errors on first
+  `mvn package` run (Prompt 07). Log actual versions used there.
 - Checkout page structure (single-page accordion vs. multi-step) is
   **assumed single-page**. Confirm during Playwright codegen (Prompt 04)
   and split `CheckoutPage` if the DOM disagrees.
@@ -83,6 +185,11 @@ Append-only. One entry per prompt. Newest at the bottom.
   fallbacks signal a structural locator problem, not just flakiness.
 - Terms-of-service checkbox on `CartPage` must be ticked before
   checkout; skipping it yields a JS alert that's quiet to debug.
+- `TestDataFactory.generatePhoneNumber()` format: confirm demowebshop
+  accepts raw 10-digit numeric string (no separators) at Prompt 07.
+- `ExtentReportListener.onFinish()` calls `testNode.remove()` after the
+  last test — verify no ThreadLocal leak if multiple `@Test` methods run
+  in the same class (Prompt 06/07).
 
 ---
 
