@@ -1,0 +1,38 @@
+# Maven build output
+target/
+
+# TestNG default output — superseded by committed ExtentReports
+test-output/
+
+# Logs
+logs/
+*.log
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Eclipse
+.classpath
+.project
+.settings/
+.factorypath
+
+# VS Code
+.vscode/
+
+# macOS / Windows cruft
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Compiled class files
+*.class
+
+# Editor swap/backup files
+*.swp
+*.swo
+*~
