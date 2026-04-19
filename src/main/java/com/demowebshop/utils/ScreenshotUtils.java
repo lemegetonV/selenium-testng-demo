@@ -63,16 +63,30 @@ public final class ScreenshotUtils {
 
     /**
      * Wipes {@code reports/screenshots/} so a committed run is always clean.
-     * Called from {@code BaseTest @BeforeSuite}. Missing directory is fine —
-     * we recreate it on next capture.
+     * Called from {@code BaseTest @BeforeSuite}. Preserves {@code .gitkeep}
+     * so the folder stays tracked across clean runs. Missing directory is
+     * fine — we recreate it on next capture.
      */
     public static void wipeScreenshotsFolder() {
         File directory = SCREENSHOT_DIR.toFile();
         if (!directory.exists()) {
             return;
         }
+        File[] children = directory.listFiles();
+        if (children == null) {
+            return;
+        }
         try {
-            FileUtils.cleanDirectory(directory);
+            for (File child : children) {
+                if (".gitkeep".equals(child.getName())) {
+                    continue;
+                }
+                if (child.isDirectory()) {
+                    FileUtils.deleteDirectory(child);
+                } else if (!child.delete()) {
+                    throw new IOException("Could not delete " + child.getAbsolutePath());
+                }
+            }
             log.info("Wiped {} for the new run", SCREENSHOT_DIR);
         } catch (IOException ex) {
             throw new FrameworkException("Failed to wipe " + SCREENSHOT_DIR, ex);

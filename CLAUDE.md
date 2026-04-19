@@ -406,20 +406,106 @@ Append-only. One entry per prompt. Newest at the bottom.
 
 ---
 
+### 2026-04-19 — Prompt 06: First Run + AJAX Race Fix
+
+- **Files modified**
+  - `src/main/java/com/demowebshop/utils/WaitUtils.java` — added
+    `forOptionInSelect(By, String)`. Polls the `<select>` options via
+    `Select.getOptions()` until a trimmed text match exists. Catches
+    `StaleElementReferenceException` inside the `until` lambda so the poll
+    rides through DOM swaps cleanly. Timeout surfaces as `FrameworkException`.
+  - `src/main/java/com/demowebshop/pages/CheckoutPage.java` — replaced
+    `wait.forClickable(BILLING_STATE)` / `wait.forClickable(SHIPPING_STATE)`
+    with `wait.forOptionInSelect(..., address.getState())`. The earlier
+    `forClickable` returned as soon as the `<select>` element itself was
+    clickable, independent of whether the AJAX option list had repopulated.
+  - `src/main/java/com/demowebshop/utils/ScreenshotUtils.java` — rewrote
+    `wipeScreenshotsFolder()` to iterate children and skip `.gitkeep`
+    instead of calling `FileUtils.cleanDirectory()`. Without this, the
+    `@BeforeSuite` hook wiped the tracked marker and the folder
+    disappeared from git.
+  - `reports/screenshots/.gitkeep` — restored (was deleted by the first
+    run's wipe).
+  - `reports/extent-report.html` — first committed passing run
+    (order 2276308, full 11-step flow green).
+
+- **Failure triaged this prompt**
+  - **Symptom:** `org.openqa.selenium.NoSuchElementException: Cannot
+    locate option with text: Maine` on `selectByVisibleText` for the
+    billing state dropdown.
+  - **Root cause:** demowebshop loads the state list via AJAX when the
+    country is selected. `wait.forClickable(BILLING_STATE)` returned in
+    ~35 ms because the `<select>` element was present and clickable
+    from the start — but its options were still the default placeholder
+    set, not the US states. `selectByVisibleText("Maine")` then failed.
+  - **Fix:** new `forOptionInSelect` polls the option list by text until
+    the target appears. Reused at both billing and shipping state
+    selection sites.
+  - **Confirmation:** full suite re-run passed, order 2276308 placed,
+    logout successful. Log now shows ~600 ms between country select and
+    state select — the wait is doing its job rather than racing.
+
+- **Nuances / discoveries**
+  - The 35 ms race window was tight enough that a casual eye might have
+    attributed the failure to the dropdown text — but Maine is on the
+    62-option list captured during Prompt 03 exploration. A text-not-
+    found error on a valid option always signals a timing problem, not
+    a value problem.
+  - `Select.getOptions()` inside an `until` lambda can throw
+    `StaleElementReferenceException` when the server mid-swaps the
+    `<select>` content. Swallowed inside the lambda so the poll keeps
+    going; only the overall `TimeoutException` escapes.
+  - `@BeforeSuite` deleted `.gitkeep`. The original `FileUtils
+    .cleanDirectory()` call was too broad — a run-local concern
+    (wiping old screenshots) shouldn't drop a git-tracking marker.
+
+- **Open items resolved this prompt**
+  - State-dropdown AJAX race (flagged at Prompt 04, Prompt 05 open items).
+  - `.gitkeep` preservation in screenshots folder (discovered during first run).
+
+- **New open items**
+  - Re-running the suite places a real order every time against the
+    dirty shared account — consider adding a `skipCheckoutConfirmation`
+    config switch at Prompt 07 if anyone else picks this up and only
+    wants a smoke run.
+  - `TestDataFactory.generatePhoneNumber()` raw-10-digit string was
+    accepted (phone `3766739946`) — assumption validated, remove from
+    open items.
+  - Click fallback chain never hit WARN (no JS fallbacks used) — locator
+    set is structurally sound.
+  - No `StaleElementReferenceException` triggered during the full flow;
+    the retry path in `ElementActions.click` remains untested against a
+    real staleness. Acceptable — the retry logic is straightforward and
+    covered by the code path, just hasn't been exercised yet.
+
+- **Corrections from user:** none — user reported "test passed now"
+  after the fix was applied and asked for docs + commit.
+
+- **Next prompt:** Prompt 07 — finalize README and AI-docs; consolidate
+  per-prompt narrative, document how to run and how to read the
+  reports, CI notes.
+
+---
+
 ## Open Items
 
-- Maven version drift (if any) surfaces at first `mvn package` run (Prompt 06).
 - **Account state dirty constraint** — always select "New Address" explicitly in
   billing and shipping dropdowns. Verify order success via confirmation banner
   only — never via order history count or address book contents.
-- State dropdown AJAX wait in `fillBillingAddress`/`fillShippingAddress` may race
-  in headless CI — tune with a proper `until` poll in Prompt 06 if flaky.
-- Watch the click-fallback WARN rate at Prompt 06 — frequent JS fallbacks signal a
-  structural locator problem.
-- `TestDataFactory.generatePhoneNumber()` format: confirm demowebshop accepts raw
-  10-digit numeric string at Prompt 06.
-- `ExtentReportListener.onFinish()` calls `testNode.remove()` — verify no ThreadLocal
-  leak if multiple `@Test` methods run in the same class (Prompt 06/07).
+- ~~Maven version drift.~~ RESOLVED — first `mvn package`-equivalent run (the
+  Prompt 06 suite run) completed cleanly with the PLAN.md §2 versions.
+- ~~State dropdown AJAX race.~~ RESOLVED at Prompt 06 via `WaitUtils
+  .forOptionInSelect`.
+- ~~Phone number format.~~ RESOLVED at Prompt 06 — demowebshop accepted the
+  raw 10-digit string.
+- Click-fallback WARN rate: zero JS fallbacks triggered in the Prompt 06 run;
+  monitor on future runs as a structural-health signal.
+- `ExtentReportListener.onFinish()` calls `testNode.remove()` — verify no
+  ThreadLocal leak if multiple `@Test` methods run in the same class (Prompt 07
+  review).
+- Real-order side effect: every successful run places a live order on the
+  shared demowebshop account. Consider a config switch at Prompt 07 for
+  smoke runs that stop short of the confirm click.
 
 ---
 

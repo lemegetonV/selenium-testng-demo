@@ -94,7 +94,9 @@ public class CheckoutPage extends BasePage {
         actions.type(BILLING_LAST_NAME,  address.getLastName(),  "billing last name");
         actions.type(BILLING_EMAIL,      address.getEmail(),     "billing email");
         actions.selectByVisibleText(BILLING_COUNTRY, address.getCountry(), "billing country");
-        wait.forClickable(BILLING_STATE);
+        // State list is AJAX-repopulated after country selection; wait for the
+        // specific target option to appear before selecting it.
+        wait.forOptionInSelect(BILLING_STATE, address.getState());
         actions.selectByVisibleText(BILLING_STATE, address.getState(), "billing state");
         actions.type(BILLING_CITY,     address.getCity(),     "billing city");
         actions.type(BILLING_ADDRESS1, address.getAddress1(), "billing address1");
@@ -115,7 +117,8 @@ public class CheckoutPage extends BasePage {
         actions.type(SHIPPING_LAST_NAME,  address.getLastName(),  "shipping last name");
         actions.type(SHIPPING_EMAIL,      address.getEmail(),     "shipping email");
         actions.selectByVisibleText(SHIPPING_COUNTRY, address.getCountry(), "shipping country");
-        wait.forClickable(SHIPPING_STATE);
+        // Same AJAX race as billing — wait for the target state option to appear.
+        wait.forOptionInSelect(SHIPPING_STATE, address.getState());
         actions.selectByVisibleText(SHIPPING_STATE, address.getState(), "shipping state");
         actions.type(SHIPPING_CITY,     address.getCity(),     "shipping city");
         actions.type(SHIPPING_ADDRESS1, address.getAddress1(), "shipping address1");

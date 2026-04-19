@@ -3,10 +3,12 @@ package com.demowebshop.utils;
 import com.demowebshop.config.ConfigReader;
 import com.demowebshop.core.FrameworkException;
 import org.openqa.selenium.By;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
@@ -65,6 +67,34 @@ public final class WaitUtils {
             return wait.until(ExpectedConditions.urlContains(fragment));
         } catch (TimeoutException ex) {
             throw new FrameworkException("Timed out waiting for URL to contain '" + fragment + "'", ex);
+        }
+    }
+
+    /**
+     * Polls until {@code selectLocator} resolves to a {@code <select>} that has
+     * an option whose trimmed text equals {@code optionText}. Needed for AJAX
+     * dropdowns (e.g. the checkout state dropdown, which repopulates after the
+     * country is chosen): {@link #forClickable} can return while the old option
+     * set is still in the DOM, which then causes {@code selectByVisibleText} to
+     * fail with "Cannot locate option with text: ...". Matches on trimmed text,
+     * since demowebshop option labels occasionally carry trailing whitespace.
+     */
+    public void forOptionInSelect(By selectLocator, String optionText) {
+        try {
+            wait.until(driver -> {
+                try {
+                    WebElement select = driver.findElement(selectLocator);
+                    return new Select(select).getOptions().stream()
+                            .map(WebElement::getText)
+                            .map(String::trim)
+                            .anyMatch(text -> text.equals(optionText));
+                } catch (StaleElementReferenceException stale) {
+                    return false;
+                }
+            });
+        } catch (TimeoutException ex) {
+            throw new FrameworkException(
+                    "Timed out waiting for option '" + optionText + "' in select: " + selectLocator, ex);
         }
     }
 }
