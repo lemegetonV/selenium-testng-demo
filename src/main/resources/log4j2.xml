@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="WARN">
+<!--
+    packages="com.demowebshop.listeners" — required for runtime plugin
+    discovery of ExtentAppender. The maven-compiler-plugin block has
+    only Lombok in annotationProcessorPaths, which suppresses log4j-core's
+    own annotation processor and thus the Log4j2Plugins.dat cache. The
+    packages attribute is the runtime fallback that scans the named
+    package by reflection.
+-->
+<Configuration status="WARN" packages="com.demowebshop.listeners">
 
     <Appenders>
 
@@ -24,13 +32,21 @@
             <DefaultRolloverStrategy max="7"/>
         </RollingFile>
 
+        <ExtentAppender name="ExtentAppender"/>
+
     </Appenders>
 
     <Loggers>
 
+        <!--
+            ExtentAppender is attached only here so noise from Selenium /
+            HTTP loggers never reaches the report. additivity="false"
+            prevents the Root logger's appenders from duplicating output.
+        -->
         <Logger name="com.demowebshop" level="DEBUG" additivity="false">
             <AppenderRef ref="Console"/>
             <AppenderRef ref="RollingFile"/>
+            <AppenderRef ref="ExtentAppender"/>
         </Logger>
 
         <Logger name="org.openqa.selenium" level="WARN" additivity="false">

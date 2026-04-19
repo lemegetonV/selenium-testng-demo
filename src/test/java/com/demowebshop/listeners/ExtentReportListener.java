@@ -50,11 +50,13 @@ public class ExtentReportListener implements ITestListener {
     public void onTestStart(ITestResult result) {
         ExtentTest test = extent.createTest(result.getMethod().getMethodName());
         testNode.set(test);
+        CurrentExtentTest.set(test);
     }
 
     @Override
     public void onTestSuccess(ITestResult result) {
         testNode.get().pass("Test passed");
+        CurrentExtentTest.clear();
     }
 
     @Override
@@ -71,6 +73,7 @@ public class ExtentReportListener implements ITestListener {
         if (!filePath.isBlank()) {
             log.info("Screenshot saved to {}", filePath);
         }
+        CurrentExtentTest.clear();
     }
 
     @Override
@@ -79,6 +82,7 @@ public class ExtentReportListener implements ITestListener {
                 ? result.getThrowable().getMessage()
                 : "No skip reason available";
         testNode.get().skip(reason);
+        CurrentExtentTest.clear();
     }
 
     @Override
@@ -88,5 +92,6 @@ public class ExtentReportListener implements ITestListener {
             log.info("ExtentReports flushed to {}", REPORT_PATH);
         }
         testNode.remove();
+        CurrentExtentTest.clear();
     }
 }

@@ -35,7 +35,7 @@
 <a href="#"><span class="badge badge-primary">End-to-End Purchase Suite</span></a>
 </li>
 <li class="m-r-10">
-<a href="#"><span class="badge badge-primary">Apr 19, 2026 03:30:43 pm</span></a>
+<a href="#"><span class="badge badge-primary">Apr 19, 2026 03:45:11 pm</span></a>
 </li>
 </ul>
 </div>
@@ -81,7 +81,7 @@
           <div class="test-detail">
             <p class="name">endToEndPurchaseFlow</p>
             <p class="text-sm">
-              <span>3:30:47 pm</span> / <span>00:00:12:951</span>
+              <span>3:45:14 pm</span> / <span>00:00:13:408</span>
               <span class="badge pass-bg log float-right">Pass</span>
             </p>
           </div>
@@ -90,9 +90,9 @@
 <div class="p-v-10">
 <div class="info">
 <h5 class="test-status text-pass">endToEndPurchaseFlow</h5>
-<span class='badge badge-success'>04.19.2026 3:30:47 pm</span>
-<span class='badge badge-danger'>04.19.2026 3:31:00 pm</span>
-<span class='badge badge-default'>00:00:12:951</span>
+<span class='badge badge-success'>04.19.2026 3:45:14 pm</span>
+<span class='badge badge-danger'>04.19.2026 3:45:28 pm</span>
+<span class='badge badge-default'>00:00:13:408</span>
 &middot; <span class='uri-anchor badge badge-default'>#test-id=1</span>
 <span title='Skip to the next failed step' class='badge badge-danger pointer float-right ne ml-1'><i class="fa fa-fast-forward"></i></span>
 <span title='Collapse all nodes' class='badge badge-default pointer float-right ct ml-1'><i class="fa fa-compress"></i></span>
@@ -104,8 +104,442 @@
   <thead><tr><th class="status-col">Status</th><th class="timestamp-col">Timestamp</th><th class="details-col">Details</th></tr></thead>
   <tbody>
       <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:14 pm</td>
+        <td>
+          === Step 1: Launch and verify homepage ===
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:14 pm</td>
+        <td>
+          === Step 2: Login ===
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:14 pm</td>
+        <td>
+          Click: login link [By.cssSelector: a[href='/login']]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:15 pm</td>
+        <td>
+          Type 'qa.user123@mailinator.com' into: email [By.cssSelector: #Email]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:15 pm</td>
+        <td>
+          Type '****' into: password [By.cssSelector: #Password]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:15 pm</td>
+        <td>
+          Click: login button [By.cssSelector: input[value='Log in']]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:16 pm</td>
+        <td>
+          === Step 3: Search for 'laptop' ===
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:16 pm</td>
+        <td>
+          Type 'laptop' into: search box [By.cssSelector: #small-searchterms]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:16 pm</td>
+        <td>
+          Click: search button [By.cssSelector: input.search-box-button]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:16 pm</td>
+        <td>
+          === Step 4: Add '14.1-inch Laptop' to cart ===
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:16 pm</td>
+        <td>
+          Click: add to cart: 14.1-inch Laptop [By.xpath: //h2[contains(@class,'product-title')]/a[normalize-space()='14.1-inch Laptop']/ancestor::div[contains(@class,'product-item')]//input[@value='Add to cart']]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:17 pm</td>
+        <td>
+          Read text: cart link [By.cssSelector: #topcartlink a]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:17 pm</td>
+        <td>
+          === Step 5: Open cart and verify contents ===
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:17 pm</td>
+        <td>
+          Click: cart link [By.cssSelector: #topcartlink a]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:18 pm</td>
+        <td>
+          Find all texts: cart product names [By.xpath: //td[contains(@class,'product')]//a[contains(@class,'product-name')]]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:18 pm</td>
+        <td>
+          === Step 6: Proceed to checkout ===
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:18 pm</td>
+        <td>
+          Check: terms of service checkbox [By.cssSelector: #termsofservice]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:18 pm</td>
+        <td>
+          Click: checkout button [By.cssSelector: #checkout]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:19 pm</td>
+        <td>
+          === Step 7: Fill billing and shipping addresses ===
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:19 pm</td>
+        <td>
+          TestDataFactory seeded with dataFakerSeed=42
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:19 pm</td>
+        <td>
+          Select by text 'New Address': billing address dropdown [By.cssSelector: #billing-address-select]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:19 pm</td>
+        <td>
+          Type 'Lamar' into: billing first name [By.cssSelector: #BillingNewAddress_FirstName]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:19 pm</td>
+        <td>
+          Type 'Lehner' into: billing last name [By.cssSelector: #BillingNewAddress_LastName]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:19 pm</td>
+        <td>
+          Type 'lynda.oberbrunner@hotmail.com' into: billing email [By.cssSelector: #BillingNewAddress_Email]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:19 pm</td>
+        <td>
+          Select by text 'United States': billing country [By.cssSelector: #BillingNewAddress_CountryId]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:20 pm</td>
+        <td>
+          Select by text 'Maine': billing state [By.cssSelector: #BillingNewAddress_StateProvinceId]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:20 pm</td>
+        <td>
+          Type 'Krystinmouth' into: billing city [By.cssSelector: #BillingNewAddress_City]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:20 pm</td>
+        <td>
+          Type '26260 Collins Flat' into: billing address1 [By.cssSelector: #BillingNewAddress_Address1]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:20 pm</td>
+        <td>
+          Type '36331' into: billing zip [By.cssSelector: #BillingNewAddress_ZipPostalCode]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:20 pm</td>
+        <td>
+          Type '3766739946' into: billing phone [By.cssSelector: #BillingNewAddress_PhoneNumber]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:20 pm</td>
+        <td>
+          Click: billing continue [By.cssSelector: #billing-buttons-container input[value='Continue']]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:21 pm</td>
+        <td>
+          Select by text 'New Address': shipping address dropdown [By.cssSelector: #shipping-address-select]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:21 pm</td>
+        <td>
+          Type 'Lamar' into: shipping first name [By.cssSelector: #ShippingNewAddress_FirstName]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:21 pm</td>
+        <td>
+          Type 'Lehner' into: shipping last name [By.cssSelector: #ShippingNewAddress_LastName]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:21 pm</td>
+        <td>
+          Type 'lynda.oberbrunner@hotmail.com' into: shipping email [By.cssSelector: #ShippingNewAddress_Email]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:21 pm</td>
+        <td>
+          Select by text 'United States': shipping country [By.cssSelector: #ShippingNewAddress_CountryId]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:22 pm</td>
+        <td>
+          Select by text 'Maine': shipping state [By.cssSelector: #ShippingNewAddress_StateProvinceId]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:22 pm</td>
+        <td>
+          Type 'Krystinmouth' into: shipping city [By.cssSelector: #ShippingNewAddress_City]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:22 pm</td>
+        <td>
+          Type '26260 Collins Flat' into: shipping address1 [By.cssSelector: #ShippingNewAddress_Address1]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:22 pm</td>
+        <td>
+          Type '36331' into: shipping zip [By.cssSelector: #ShippingNewAddress_ZipPostalCode]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:22 pm</td>
+        <td>
+          Type '3766739946' into: shipping phone [By.cssSelector: #ShippingNewAddress_PhoneNumber]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:22 pm</td>
+        <td>
+          Click: shipping continue [By.cssSelector: #shipping-buttons-container input[value='Continue']]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:23 pm</td>
+        <td>
+          === Step 8: Select shipping method 'Ground' and payment method 'Credit Card' ===
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:23 pm</td>
+        <td>
+          Click: shipping method: Ground [By.xpath: //input[@name='shippingoption'][following-sibling::label[contains(normalize-space(.),'Ground')]]]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:23 pm</td>
+        <td>
+          Click: shipping method continue [By.cssSelector: #shipping-method-buttons-container input[value='Continue']]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:24 pm</td>
+        <td>
+          Click: payment method: Credit Card [By.xpath: //input[@name='paymentmethod'][following-sibling::label[contains(normalize-space(.),'Credit Card')]]]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:24 pm</td>
+        <td>
+          Click: payment method continue [By.cssSelector: #payment-method-buttons-container input[value='Continue']]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:24 pm</td>
+        <td>
+          === Step 9: Fill payment info and confirm order ===
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:24 pm</td>
+        <td>
+          Select by text 'Visa': card type [By.cssSelector: #CreditCardType]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:24 pm</td>
+        <td>
+          Type 'Marlena Little Sr.' into: cardholder name [By.cssSelector: #CardholderName]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:24 pm</td>
+        <td>
+          Type '****' into: card number [By.cssSelector: #CardNumber]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:25 pm</td>
+        <td>
+          Select by text '12': expiry month [By.cssSelector: #ExpireMonth]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:25 pm</td>
+        <td>
+          Select by text '2030': expiry year [By.cssSelector: #ExpireYear]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:25 pm</td>
+        <td>
+          Type '****' into: cvv [By.cssSelector: #CardCode]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:25 pm</td>
+        <td>
+          Click: payment info continue [By.cssSelector: #payment-info-buttons-container input[value='Continue']]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:26 pm</td>
+        <td>
+          Click: confirm order button [By.cssSelector: #confirm-order-buttons-container input[value='Confirm']]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:27 pm</td>
+        <td>
+          === Step 10: Verify order success ===
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:27 pm</td>
+        <td>
+          Read text: order success banner [By.cssSelector: .section.order-completed .title]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:27 pm</td>
+        <td>
+          Read text: order number container [By.cssSelector: .section.order-completed]
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:27 pm</td>
+        <td>
+          Order placed successfully. Order number: 2276316
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:27 pm</td>
+        <td>
+          === Step 11: Logout ===
+        </td>
+      </tr>
+      <tr class="event-row">
+        <td><span class="badge log info-bg">Info</span></td>
+        <td>3:45:27 pm</td>
+        <td>
+          Click: logout link [By.cssSelector: .ico-logout]
+        </td>
+      </tr>
+      <tr class="event-row">
         <td><span class="badge log pass-bg">Pass</span></td>
-        <td>3:31:00 pm</td>
+        <td>3:45:28 pm</td>
         <td>
           Test passed
         </td>
@@ -129,13 +563,13 @@
 <div class="col-md-3">
 <div class="card"><div class="card-body">
 <p class="m-b-0">Started</p>
-<h3>Apr 19, 2026 03:30:43 pm</h3>
+<h3>Apr 19, 2026 03:45:11 pm</h3>
 </div></div>
 </div>
 <div class="col-md-3">
 <div class="card"><div class="card-body">
 <p class="m-b-0">Ended</p>
-<h3>Apr 19, 2026 03:31:00 pm</h3>
+<h3>Apr 19, 2026 03:45:28 pm</h3>
 </div></div>
 </div>
 <div class="col-md-3">
@@ -186,10 +620,10 @@
 </div>
 </div>
 <div class="card-footer">
-<div><small data-tooltip='100%'><b>1</b> events passed</small></div>
+<div><small data-tooltip='1%'><b>1</b> events passed</small></div>
 <div>
 <small data-tooltip='0%'><b>0</b> events failed,
-<b data-tooltip='%'>0</b> others
+<b data-tooltip='%'>62</b> others
 </small>
 </div>
 </div>
@@ -205,7 +639,7 @@
 </div></div>
 <script>
 var timeline = {
-"endToEndPurchaseFlow":12.951
+"endToEndPurchaseFlow":13.408
 };
 </script>
 <div class="row">
@@ -257,7 +691,7 @@ passEvents: 1,
 failEvents: 0,
 warningEvents: 0,
 skipEvents: 0,
-infoEvents: 0
+infoEvents: 62
 };
 </script>        </div>
       </div>

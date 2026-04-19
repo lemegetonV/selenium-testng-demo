@@ -487,6 +487,94 @@ Append-only. One entry per prompt. Newest at the bottom.
 
 ---
 
+### 2026-04-19 — Prompt 06.5: SLF4J → Extent log forwarding
+
+- **Files created**
+  - `src/test/java/com/demowebshop/listeners/CurrentExtentTest.java` —
+    static `ThreadLocal<ExtentTest>` holder. Pure bridge between
+    `ExtentReportListener` (publisher) and `ExtentAppender` (consumer).
+    No logic.
+  - `src/test/java/com/demowebshop/listeners/ExtentAppender.java` —
+    custom Log4j2 plugin appender. Reads the active node from
+    `CurrentExtentTest.get()`; if null, drops the event (covers
+    `@BeforeSuite` / pre-test logs). Level mapping: INFO →
+    `extentTest.info`, WARN → `extentTest.warning`, ERROR/FATAL →
+    `extentTest.fail`. DEBUG/TRACE intentionally dropped so the report
+    stays focused on user-visible narrative; console + RollingFile
+    appenders still capture them.
+
+- **Files modified**
+  - `src/main/resources/log4j2.xml` — added
+    `packages="com.demowebshop.listeners"` to the `<Configuration>`
+    root, registered `<ExtentAppender name="ExtentAppender"/>`,
+    attached it only to the `com.demowebshop` logger so Selenium /
+    HTTP noise never reaches the report.
+  - `src/test/java/com/demowebshop/listeners/ExtentReportListener.java`
+    — `onTestStart` now also calls `CurrentExtentTest.set(test)`;
+    `onTestSuccess`, `onTestFailure`, `onTestSkipped`, and
+    `onFinish` each call `CurrentExtentTest.clear()` at the end. The
+    listener's internal `testNode` ThreadLocal is unchanged — it still
+    drives the failure-screenshot path; the new holder is a parallel
+    mechanism so the appender doesn't need a back-reference to the
+    listener.
+  - `reports/extent-report.html` — regenerated (order 2276316);
+    Details section now shows the full step-by-step narrative.
+
+- **Nuances / discoveries**
+  - **Log4j2 plugin discovery via `packages` attribute, not the
+    annotation processor.** The `maven-compiler-plugin`
+    `annotationProcessorPaths` block declares only Lombok, which
+    suppresses log4j-core's own annotation processor. As a result
+    `target/classes/META-INF/.../Log4j2Plugins.dat` is **not**
+    produced (verification step 1 of the prompt expected it — it
+    doesn't exist, but the appender still loads). The `packages`
+    attribute on `<Configuration>` is the runtime, reflection-based
+    fallback that picks up the appender. Documented inline in
+    `log4j2.xml` so future maintainers don't chase the missing cache.
+  - **Level-filter at the appender, not at the logger.** DEBUG/TRACE
+    are dropped inside `append(...)` rather than via Log4j level
+    config. This lets `com.demowebshop` stay at DEBUG for file logs
+    while the report stays focused on user-visible narrative —
+    cleaner than splitting into two loggers with different levels.
+  - **No layout used at runtime.** The appender accepts a layout
+    parameter for plugin-contract compliance, but Extent takes plain
+    strings — formatting goes through
+    `event.getMessage().getFormattedMessage()` (which already handles
+    SLF4J `{}` placeholder substitution).
+  - **`additivity="false"` on the `com.demowebshop` logger** — already
+    present, but doubly important now: prevents the Root logger from
+    duplicating events into a second ExtentAppender attachment if one
+    were ever added there.
+
+- **Verification completed**
+  - `mvn clean test-compile` → BUILD SUCCESS (24 main + 6 test
+    sources; the two new appender classes compile cleanly).
+  - `mvn test` → 1 test passed, order 2276316 placed, 17.29s.
+  - `reports/extent-report.html` size: **23KB** (well under the
+    ~500KB ceiling — confirms no DEBUG leakage).
+  - Spot-checked report content: step banners (`=== Step 4: ... ===`),
+    click/type/select entries (`Click: cart link`, `Type 'Lamar'
+    into: billing first name`), `TestDataFactory seeded with
+    dataFakerSeed=42`, `Order placed successfully. Order number:
+    2276316`, and final `Test passed` all present in the HTML.
+  - `Native click succeeded` (DEBUG) is **absent** from the HTML —
+    appender-level DEBUG/TRACE filter working as intended.
+
+- **Open items resolved this prompt**
+  - None — pure enhancement layered on top of the Prompt 06 green run.
+
+- **Open items unchanged / re-confirmed**
+  - `ExtentReportListener.onFinish()` still calls `testNode.remove()`
+    — unchanged. `CurrentExtentTest.clear()` handles the parallel
+    cleanup path. Both are safe in sequential mode and would extend
+    cleanly if parallel mode is ever enabled.
+
+- **Corrections from user:** none (Auto Mode).
+
+- **Next prompt:** Prompt 07 — README and AI-docs finalization.
+
+---
+
 ## Open Items
 
 - **Account state dirty constraint** — always select "New Address" explicitly in
