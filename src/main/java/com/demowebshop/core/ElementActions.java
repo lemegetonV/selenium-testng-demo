@@ -13,6 +13,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.Select;
 
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -136,6 +137,45 @@ public class ElementActions {
     public void waitForText(By locator, String expectedText) {
         log.info("Wait for text '{}' in: {}", expectedText, locator);
         wait.forText(locator, expectedText);
+    }
+
+    /**
+     * Returns the {@link WebElement#getText()} of every element matched by
+     * {@code locator}. Returns an empty list if none match — no exception thrown.
+     */
+    public List<String> findAllTexts(By locator, String description) {
+        log.info("Find all texts: {} [{}]", description, locator);
+        try {
+            return driver.findElements(locator).stream()
+                    .map(WebElement::getText)
+                    .toList();
+        } catch (FrameworkException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            failure("findAllTexts '" + description + "'", ex);
+            return List.of();
+        }
+    }
+
+    /**
+     * Ticks a checkbox only if it is not already selected — idempotent to
+     * handle pre-checked state left from a previous session.
+     */
+    public void check(By locator, String description) {
+        log.info("Check: {} [{}]", description, locator);
+        try {
+            WebElement element = wait.forClickable(locator);
+            if (!element.isSelected()) {
+                element.click();
+                log.debug("Checked: {}", description);
+            } else {
+                log.debug("Already checked, skipping click: {}", description);
+            }
+        } catch (FrameworkException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            failure("check '" + description + "'", ex);
+        }
     }
 
     public void scrollIntoView(By locator) {

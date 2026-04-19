@@ -260,26 +260,89 @@ Append-only. One entry per prompt. Newest at the bottom.
 
 ---
 
+### 2026-04-19 — Prompt 04: Page Object Implementation
+
+- **Files modified**
+  - `src/main/java/com/demowebshop/core/ElementActions.java` — added
+    `findAllTexts(By, String) List<String>` and `check(By, String)` methods.
+  - `src/main/java/com/demowebshop/pages/HomePage.java` — implemented `open()`,
+    `isLoaded()`.
+  - `src/main/java/com/demowebshop/pages/HeaderComponent.java` — implemented
+    `clickLoginLink()`, `searchFor()`, `openCart()`, `clickLogout()`,
+    `isLoggedIn()`, `getCartItemCount()`.
+  - `src/main/java/com/demowebshop/pages/LoginPage.java` — implemented
+    `login(User)`, `isLoaded()`, `getErrorMessage()`.
+  - `src/main/java/com/demowebshop/pages/SearchResultsPage.java` — implemented
+    `isLoaded()`, `containsProduct()`, `addProductToCart()`.
+  - `src/main/java/com/demowebshop/pages/CartPage.java` — implemented
+    `isLoaded()`, `getCartItemNames()`, `acceptTermsOfService()`,
+    `proceedToCheckout()`, `checkout()`.
+  - `src/main/java/com/demowebshop/pages/CheckoutPage.java` — implemented all
+    six accordion methods: `fillBillingAddress()`, `fillShippingAddress()`,
+    `selectShippingMethod()`, `selectPaymentMethod()`, `fillPaymentInfo()`,
+    `confirmOrder()`.
+  - `src/main/java/com/demowebshop/pages/OrderConfirmationPage.java` —
+    implemented `isLoaded()`, `isOrderPlaced()`, `getOrderNumber()`,
+    `continueShopping()`.
+  - `pom.xml` — upgraded Lombok from 1.18.36 → **1.18.38** to fix Java 21.0.10
+    `TypeTag.UNKNOWN` annotation processor crash. Added `<fork>true</fork>` and
+    eight `-J--add-opens` `compilerArgs` for `jdk.compiler` internals.
+  - `.mvn/jvm.config` — created with `--add-opens` directives (belt-and-suspenders;
+    the pom.xml fork approach is the effective fix).
+
+- **Locators.md updates** — none required. All locators used verbatim from
+  `locators.md`. Two XPath templates (shipping/payment radio selection) already
+  existed as a documented pattern in locators.md; they were promoted to named
+  constants in CheckoutPage.
+
+- **Nuances / discoveries**
+  - **Lombok 1.18.36 + Java 21.0.10 compile crash** — `mvn clean compile` failed
+    with `NoSuchFieldException: TypeTag :: UNKNOWN` even in the Prompt 02 scaffold.
+    This was a pre-existing issue. Fixed by upgrading Lombok to 1.18.38.
+  - **`wait.forClickable(STATE_DROPDOWN)` between country and state selection** —
+    added as a minimal guard to give the AJAX-populated state dropdown a moment
+    to load. If it still flakes in Prompt 06, replace with a custom
+    `WebDriverWait.until` that polls for a non-default state option.
+  - **Order number regex** — used `Pattern.compile("Order number:\\s*(\\d+)")` to
+    extract the numeric ID from the `.section.order-completed` container text.
+    More precise than a split approach.
+  - **`getCartItemCount()` returns 0 on empty cart** — handles both "Shopping cart"
+    (no parens) and "Shopping cart(N)" (with count). Parsing tolerates unexpected
+    formats.
+
+- **Open items resolved**
+  - `selectPaymentMethod` radio label approach: implemented as XPath
+    `//input[@name='paymentmethod'][following-sibling::label[contains(...)]]`.
+  - `selectShippingMethod` same XPath pattern.
+  - "New Address" selected via `selectByVisibleText` — not `selectByValue`.
+  - Order number extracted via regex on container text.
+  - Terms-of-service handled by `ElementActions.check()` (idempotent).
+
+- **New open items for Prompt 05/06**
+  - State dropdown AJAX wait (`wait.forClickable`) may still race in headless CI.
+    Flag for Prompt 06 stabilization if observed.
+  - `addProductToCart` uses the full 15-second explicit wait for the
+    notification bar. If the bar fades too quickly and the wait misses it,
+    a shorter-timeout WaitUtils variant will be needed in Prompt 06.
+  - Confirm that `mvn clean compile` produces a clean build after the Lombok
+    upgrade (verified: BUILD SUCCESS with 23 source files).
+
+- **Corrections from user:** none (auto-execution).
+
+- **Next prompt:** Prompt 05 — write the EndToEndPurchaseTest using the page objects.
+
+---
+
 ## Open Items
 
 - Maven version drift (if any) surfaces at first `mvn package` run (Prompt 06).
 - **Account state dirty constraint** — always select "New Address" explicitly in
   billing and shipping dropdowns. Verify order success via confirmation banner
   only — never via order history count or address book contents.
-- `selectPaymentMethod`: each payment radio has two labels (image + text). In
-  Selenium use `By.xpath` to find the radio whose text label contains "Credit Card",
-  then call `.click()` on the radio (not the label).
-- `selectShippingMethod`: use `input[name='shippingoption']` group and
-  `selectByVisibleText` or filter by adjacent label to pick "Ground".
-- Billing/shipping address "New Address" option value is `""` (empty string) in
-  the dropdown — use `Select.selectByVisibleText("New Address")`, not `selectByValue`.
-- Order number extraction: no dedicated element. Get text from `.section.order-completed`
-  and parse after `"Order number: "`.
-- `accountLink` has 2 DOM matches — use `.header-links a[href='/customer/info']`
-  or skip since the E2E doesn't assert on account info.
+- State dropdown AJAX wait in `fillBillingAddress`/`fillShippingAddress` may race
+  in headless CI — tune with a proper `until` poll in Prompt 06 if flaky.
 - Watch the click-fallback WARN rate at Prompt 06 — frequent JS fallbacks signal a
   structural locator problem.
-- Terms-of-service `#termsofservice` checkbox must be ticked before `#checkout` click.
 - `TestDataFactory.generatePhoneNumber()` format: confirm demowebshop accepts raw
   10-digit numeric string at Prompt 06.
 - `ExtentReportListener.onFinish()` calls `testNode.remove()` — verify no ThreadLocal
