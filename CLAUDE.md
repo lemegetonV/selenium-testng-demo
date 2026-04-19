@@ -333,6 +333,79 @@ Append-only. One entry per prompt. Newest at the bottom.
 
 ---
 
+### 2026-04-19 — Prompt 05: End-to-End Test Implementation
+
+- **Files modified**
+  - `src/test/java/com/demowebshop/tests/EndToEndPurchaseTest.java` — replaced
+    stub with a data-driven `@Test` wired to `ProductDataProvider#searchTerms`.
+    Walks all 11 steps top-to-bottom; section log headers at each step.
+  - `src/main/java/com/demowebshop/models/UsersFile.java` — new wrapper POJO
+    (`@Data @Builder @Jacksonized`) exposing `defaultUser`. Bridges the gap
+    between the prompt's described API (`load("users.json", User.class)
+    .getDefaultUser()`) and the existing `User` POJO, which has only
+    email/password. Prompt-02 Amendment 1 kept `User` flat; a wrapper was the
+    minimum non-destructive way to match the intended call site.
+  - `testng.xml` — no changes required. Verified: listener registered, suite
+    params `browser`/`baseUrl` present, `com.demowebshop.tests` package wired
+    in the `<test>` block.
+
+- **Four checkpoint assertions**
+  1. Login success (`header.isLoggedIn()` true) — **line 55**.
+  2. Product added (cart count > 0) — **line 67**.
+  3. Cart contents match selected item (`cartItemNames.contains(expected)`) —
+     **line 74**.
+  4. Order confirmation displayed (`confirmation.isOrderPlaced()` true) —
+     **line 101**.
+  Plus supporting hard assertions: search-results loaded+contains-product,
+  checkout loaded, confirmation page loaded, order number non-empty, logout
+  cleared session. Every assertion carries a failure message that identifies
+  the state being checked.
+
+- **Nuances / discoveries**
+  - **`User` cannot be the root deserialization target for `users.json`.**
+    Users file has a `defaultUser` wrapper; `User` POJO has only
+    email/password. Introduced `UsersFile` wrapper POJO rather than flattening
+    `users.json` (a flatten would have mutated fixture shape locked at
+    Prompt 02).
+  - **Short shipping/payment labels work via `contains()` XPath.** The
+    CheckoutPage XPath templates match on `contains(normalize-space(.), '%s')`,
+    so passing `"Ground"` matches `"Ground (0.00)"` and `"Credit Card"` matches
+    exactly. Constants live as `SHIPPING_METHOD` / `PAYMENT_METHOD` at the top
+    of the test for easy future promotion to data files.
+  - **Two `HeaderComponent` instances around logout.** The post-order header is
+    re-instantiated (`new HeaderComponent(getDriver())`) after the order flow
+    because the driver has navigated through several pages; an instance created
+    pre-checkout is still valid (locators are re-resolved every call through
+    `ElementActions`) but a fresh instance at step 11 matches the step's intent
+    and reads clearly.
+  - **Stale IDE diagnostics after edit.** The IDE reported "BaseTest cannot be
+    resolved" and "getDriver() undefined" immediately after the write. The
+    authoritative check (`mvn test-compile`) returned EXIT=0 with 24 source
+    files compiled cleanly.
+  - **No test-level try/catch.** Assertions fail naturally; the
+    ExtentReportListener picks up the screenshot on `onTestFailure`.
+
+- **Open items resolved this prompt**
+  - User-loading API: resolved by introducing `UsersFile` wrapper.
+
+- **New open items for Prompt 06**
+  - First real run against the live site — triage any flakiness in billing
+    state-dropdown AJAX race, add-to-cart notification timing, and click
+    fallback frequency. Watch the WARN log rate; structural locator problems
+    surface there.
+  - Confirm shipping/payment short-label `contains()` match holds in a live
+    run (it worked during Playwright exploration).
+  - Confirm post-order logout navigation: `clickLogout()` waits for the login
+    link; verify no redirect loop or intermediate page.
+
+- **Corrections from user:** none (auto-execution under Auto Mode).
+
+- **Confirmation:** `mvn clean compile test-compile` returned exit 0.
+
+- **Next prompt:** Prompt 06 — run the suite, triage failures, stabilize.
+
+---
+
 ## Open Items
 
 - Maven version drift (if any) surfaces at first `mvn package` run (Prompt 06).
