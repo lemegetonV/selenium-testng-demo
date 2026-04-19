@@ -2,6 +2,19 @@
 
 End-to-end Selenium automation for the demowebshop purchase flow, built with Java 21, TestNG, and Maven.
 
+## AI-assisted development
+
+This project was built using Claude Code (Anthropic) as the primary coding
+agent, with the Playwright CLI used separately for scripted locator
+exploration against the live site. The build proceeded as a fixed sequence
+of prompts — planning, scaffold, locator exploration, page objects, tests,
+stabilization, documentation — with the framework blueprint locked into
+`AI-docs/PLAN.md` up front and each prompt's narrative recorded as a
+dedicated file under `AI-docs/`. AI tool use was required per the
+assessment brief; `AI-docs/` contains the actual prompts used, the
+per-phase commentary, and corrections from the user, so a reviewer can
+audit the process as well as the output.
+
 ## What it does
 
 One data-driven test walks the full eleven-step purchase flow on
@@ -201,19 +214,6 @@ Overridable keys in `src/test/resources/config.properties`:
 > depend on account state (address book entries, order history). But
 > reviewers re-running the suite should know that each run leaves a
 > persistent order behind on the shared account.
-
-## AI-assisted development
-
-This project was built using Claude Code (Anthropic) as the primary coding
-agent, with the Playwright CLI used separately for scripted locator
-exploration against the live site. The build proceeded as a fixed sequence
-of prompts — planning, scaffold, locator exploration, page objects, tests,
-stabilization, documentation — with the framework blueprint locked into
-`AI-docs/PLAN.md` up front and each prompt's narrative recorded as a
-dedicated file under `AI-docs/`. AI tool use was required per the
-assessment brief; `AI-docs/` contains the actual prompts used, the
-per-phase commentary, and corrections from the user, so a reviewer can
-audit the process as well as the output.
 
 ## Project metadata
 
